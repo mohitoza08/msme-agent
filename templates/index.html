@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSME Sahayak</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- Google Fonts - clean professional look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <!-- Left Sidebar - Features -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>MSME Sahayak</h1>
+                <p>AI Assistant for Indian Businesses</p>
+            </div>
+
+            <nav class="features">
+                <h3>Features</h3>
+                <button class="feature-btn" onclick="sendFeature('GST kya hota hai? GST ke kitne slabs hain?')">
+                    <span class="feature-icon">GST</span>
+                    <span>GST Calculator</span>
+                </button>
+                <button class="feature-btn" onclick="sendFeature('GST filing dates kya hain? Late filing ki penalty kitni hai?')">
+                    <span class="feature-icon">FIL</span>
+                    <span>Filing Dates</span>
+                </button>
+                <button class="feature-btn" onclick="sendFeature('Mujhe MSME schemes ke baare me batao jo mere business ke liye suitable hain')">
+                    <span class="feature-icon">SCM</span>
+                    <span>Govt Schemes</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p>Built for SDG 9 - Industry, Innovation & Infrastructure</p>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-area">
+            <!-- Chat Header -->
+            <header class="chat-header">
+                <h2>Chat with MSME Sahayak</h2>
+                <span class="status">Online</span>
+            </header>
+
+            <!-- Messages Container -->
+            <div class="messages" id="messages">
+                <div class="message bot-message">
+                    <div class="message-content">
+                        <strong>MSME Sahayak:</strong> Namaste! Main hoon MSME Sahayak - aapka AI assistant for MSME businesses.<br><br>
+                        Aap mujhse ye puchh sakte ho:<br>
+                        - GST calculation aur rates<br>
+                        - GST filing dates aur penalties<br>
+                        - Government schemes for MSME (loans, subsidies)<br><br>
+                        <em>Bas apna sawaal type karo ya sidebar se feature select karo!</em>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <textarea
+                        id="userInput"
+                        placeholder="Type your message here..."
+                        rows="1"
+                        onkeydown="handleKeyDown(event)"
+                    ></textarea>
+                    <button id="sendBtn" onclick="sendMessage()">
+                        Send
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
