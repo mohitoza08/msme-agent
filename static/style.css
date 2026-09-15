@@ -1,5 +1,5 @@
 /* MSME Sahayak - Main Stylesheet */
-/* Reset aur base styles */
+/* Reset and base styles */
 * {
     margin: 0;
     padding: 0;
@@ -19,7 +19,7 @@ body {
 }
 
 /* ==========================================
-   Sidebar - Left side me features dikhte hain
+   Sidebar - left-hand feature panel
    ========================================== */
 
 .sidebar {
@@ -110,8 +110,71 @@ body {
     text-align: center;
 }
 
+/* BYOK - bring your own Groq API key */
+.byok {
+    margin-bottom: 14px;
+    text-align: left;
+}
+
+.byok label {
+    display: block;
+    font-size: 0.68rem;
+    color: #888;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.byok-row {
+    display: flex;
+    gap: 6px;
+}
+
+.byok-row input {
+    flex: 1;
+    min-width: 0;
+    padding: 7px 9px;
+    border: 1px solid #333;
+    border-radius: 6px;
+    background: #12121f;
+    color: #fff;
+    font-size: 0.7rem;
+}
+
+.byok-row input:focus {
+    outline: none;
+    border-color: #4ade80;
+}
+
+.byok-row button {
+    padding: 7px 12px;
+    background: #4ade80;
+    color: #1a1a2e;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+.byok-row button:hover {
+    background: #22c55e;
+}
+
+.key-status {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.65rem;
+    min-height: 1em;
+}
+
+.sdg-note {
+    font-size: 0.68rem;
+    color: #666;
+}
+
 /* ==========================================
-   Chat Area - Main chat window
+   Chat Area - main chat window
    ========================================== */
 
 .chat-area {
@@ -216,7 +279,7 @@ body {
 }
 
 /* ==========================================
-   Input Area - Message type karne ki jagah
+   Input Area - message input field
    ========================================== */
 
 .input-area {
@@ -271,7 +334,7 @@ body {
 }
 
 /* ==========================================
-   Responsive - Mobile ke liye
+   Responsive - mobile layout
    ========================================== */
 
 @media (max-width: 768px) {

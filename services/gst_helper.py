@@ -1,33 +1,31 @@
-# GST Helper - Ye file GST calculations karti hai
-# GST = Goods and Services Tax - India me har cheez pe lagta hai
-# 5 slabs hain: 0%, 5%, 12%, 18%, 28%
+# GST Helper - handles all GST-related calculations and reference data.
+# GST (Goods and Services Tax) is applied across India using five rate
+# slabs: 0%, 5%, 12%, 18% and 28%.
 
-# Ye dictionary hai - common cheezon ke GST rates
-# Format: {cheez ka naam: GST rate}
-# Rates government ne fix kiye hain
+# Common goods and their GST rates. Format: {category name: GST rate}
 GST_RATES = {
-    # Zero tax - gareeb logo ki cheezein
+    # 0% slab - essential goods
     "essentials": {
         "rate": 0,
         "items": ["fresh vegetables", "fresh fruits", "milk", "curd", "bread", "eggs",
                   "salt", "rice", "wheat", "dal", "unbranded flour"],
         "note": "Ye sab zero GST hai - government ne gareeb logo ke liye chhoda hai"
     },
-    # 5% - basic packaged items
+    # 5% slab - basic packaged items
     "low": {
         "rate": 5,
         "items": ["packaged food", "tea", "coffee", "spices", "sugar",
                   "paneer", "frozen vegetables", "apparel below 1000"],
         "note": "Packaged ya processed food mostly 5% pe aata hai"
     },
-    # 12% - middle category
+    # 12% slab - mid-range goods and services
     "medium": {
         "rate": 12,
         "items": ["clothing above 1000", "processed food", "business class air ticket",
                   "fertilizers", "umbrella", "mobile phone"],
         "note": "Clothing 1000 se upar ya processed food items pe 12% lagta hai"
     },
-    # 18% - sabse common rate (services, electronics)
+    # 18% slab - the most common rate (services, electronics)
     "standard": {
         "rate": 18,
         "items": ["restaurant service", "beauty salon", "gym", "consulting",
@@ -35,7 +33,7 @@ GST_RATES = {
                   "most electronics", "stationery", "printing"],
         "note": "Maximum services pe 18% lagta hai - ye sabse common rate hai"
     },
-    # 28% - luxury items
+    # 28% slab - luxury items
     "high": {
         "rate": 28,
         "items": ["car", "bike", "AC", "washing machine", "airline tickets",
@@ -44,8 +42,7 @@ GST_RATES = {
     }
 }
 
-# Filing dates - ye yaad rakhna zaroori hai
-# Agar late ho jaye toh penalty lagegi
+# GST filing deadlines. Missing a deadline attracts a late-filing penalty.
 FILING_DATES = {
     "GSTR-1": {
         "deadline": "11th of every month",
@@ -72,7 +69,7 @@ FILING_DATES = {
 
 def calculate_gst(amount: float, rate: float) -> dict:
     """
-    GST calculate karta hai given amount pe.
+    Calculates GST for a given amount that already includes GST.
 
     Example:
         calculate_gst(1000, 18) -> {
@@ -85,12 +82,12 @@ def calculate_gst(amount: float, rate: float) -> dict:
 
     Parameters:
         amount (float): Total amount (GST inclusive)
-        rate (float): GST rate (0, 5, 12, 18, ya 28)
+        rate (float): GST rate (0, 5, 12, 18, or 28)
 
     Returns:
         dict: Breakdown of the GST calculation
     """
-    # Formula: Agar amount GST inclusive hai toh:
+    # For a GST-inclusive amount:
     # Base price = amount / (1 + rate/100)
     # GST = amount - base_price
     # CGST = GST / 2 (Central GST)
@@ -98,8 +95,8 @@ def calculate_gst(amount: float, rate: float) -> dict:
 
     base_price = round(amount / (1 + rate / 100), 2)
     gst_amount = round(amount - base_price, 2)
-    cgst = round(gst_amount / 2, 2)    # CGST = Central Government ka share
-    sgst = round(gst_amount / 2, 2)    # SGST = State Government ka share
+    cgst = round(gst_amount / 2, 2)    # Central Government's share
+    sgst = round(gst_amount / 2, 2)    # State Government's share
 
     return {
         "base_price": base_price,
@@ -114,7 +111,8 @@ def calculate_gst(amount: float, rate: float) -> dict:
 
 def calculate_gst_exclusive(amount: float, rate: float) -> dict:
     """
-    GST exclusive calculation - pehle base price hai, uspe GST lagao.
+    GST exclusive calculation - the given amount is the base price,
+    and GST is applied on top of it.
 
     Example:
         calculate_gst_exclusive(1000, 18) -> {
@@ -140,19 +138,18 @@ def calculate_gst_exclusive(amount: float, rate: float) -> dict:
 
 def get_filing_dates() -> dict:
     """
-    GST filing dates return karta hai - ye monthly/yearly deadlines hain.
+    Returns the GST filing deadlines and penalties.
     """
     return FILING_DATES
 
 
 def get_rate_for_item(item_name: str) -> dict:
     """
-    Item ka GST rate dhundhta hai.
-    Simple keyword matching use karta hai.
+    Looks up the GST rate for a given item using simple keyword matching.
     """
     item_lower = item_name.lower()
 
-    # Har slab ke items me check karo
+    # Search each rate slab's item list for a match
     for slab_name, slab_data in GST_RATES.items():
         for item in slab_data["items"]:
             if item in item_lower or item_lower in item:
@@ -163,7 +160,7 @@ def get_rate_for_item(item_name: str) -> dict:
                     "note": slab_data["note"]
                 }
 
-    # Agar match nahi mila
+    # No match found - return an empty result with a reference to the official source
     return {
         "item": item_name,
         "rate": None,
@@ -173,14 +170,14 @@ def get_rate_for_item(item_name: str) -> dict:
 
 def get_all_slabs() -> list:
     """
-    Saare GST slabs ka summary return karta hai.
+    Returns a summary of all GST rate slabs.
     """
     result = []
     for name, data in GST_RATES.items():
         result.append({
             "slab": name,
             "rate": f"{data['rate']}%",
-            "examples": ", ".join(data["items"][:5]),  # Sirf 5 examples dikhao
+            "examples": ", ".join(data["items"][:5]),  # Show five representative examples
             "note": data["note"]
         })
     return result

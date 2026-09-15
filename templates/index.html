@@ -34,7 +34,15 @@
             </nav>
 
             <div class="sidebar-footer">
-                <p>Built for SDG 9 - Industry, Innovation & Infrastructure</p>
+                <div class="byok">
+                    <label for="apiKeyInput" title="Apni Groq API key daalo - free mein groq.com se milti hai. Key browser me save hoti hai, kabhi kisi ko share nahi hoti.">Your Groq API Key (BYOK)</label>
+                    <div class="byok-row">
+                        <input type="password" id="apiKeyInput" placeholder="gsk_... (optional)" autocomplete="off" spellcheck="false">
+                        <button type="button" id="saveKeyBtn" onclick="saveApiKey()">Save</button>
+                    </div>
+                    <span id="keyStatus" class="key-status"></span>
+                </div>
+                <p class="sdg-note">Built for SDG 9 - Industry, Innovation & Infrastructure</p>
             </div>
         </aside>
 

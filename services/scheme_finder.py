@@ -1,34 +1,33 @@
-# Scheme Finder - Ye file government schemes dhundhti hai
-# User ka profile leke match karti hai eligible schemes se
-# JSON file me saare schemes ka data hai
+# Scheme Finder - matches government schemes to an MSME owner's profile.
+# Reads the scheme catalogue from the bundled JSON file and ranks the
+# schemes most relevant to the given profile.
 
 import json
 import os
 
-# Schemes ka data load karo JSON file se
-# Ye file data/ folder me hai
+# Load the scheme catalogue from data/schemes.json
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
 def load_schemes():
-    """JSON file se schemes ka data load karo"""
+    """Load the scheme data from the JSON catalogue file."""
     schemes_path = os.path.join(DATA_DIR, "schemes.json")
     with open(schemes_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-# Global variable - baar baar file read na karni pade
+# Loaded once at startup to avoid re-reading the file for every request
 ALL_SCHEMES = load_schemes()
 
 
 def find_schemes(investment: float = 0, category: str = "general",
                  business_type: str = "manufacturing", age: int = 25) -> list:
     """
-    User ki profile ke basis pe eligible schemes dhundhta hai.
+    Finds eligible schemes based on the user's profile.
 
     Parameters:
-        investment (float): Kitna invest karna chahta hai (in rupees)
+        investment (float): Amount the user plans to invest (in rupees)
         category (str): general / sc / st / obc / minority / women
         business_type (str): manufacturing / service / trade
-        age (int): User ki age
+        age (int): User's age
 
     Returns:
         list: Eligible schemes sorted by relevance
@@ -36,11 +35,11 @@ def find_schemes(investment: float = 0, category: str = "general",
     eligible = []
 
     for scheme in ALL_SCHEMES:
-        score = 0  # Ye score hai - jitna zyada utni best scheme
-        reasons = []  # Kyun eligible hai
+        score = 0  # Higher score = better match
+        reasons = []  # Why the scheme is eligible
 
         # Check 1: Category match
-        # Scheme me eligible_categories me user ki category hai ya nahi
+        # True when the user's category appears in the scheme's eligible categories
         if category.lower() in [c.lower() for c in scheme.get("eligible_categories", [])]:
             score += 30
             reasons.append(f"Category match ({category})")
@@ -49,16 +48,16 @@ def find_schemes(investment: float = 0, category: str = "general",
             reasons.append("General category ke liye available hai")
 
         # Check 2: Business type match
-        # Manufacturing, service, ya trade - kya match karta hai?
+        # Awards points when the user's business type matches the scheme
         btypes = [bt.lower() for bt in scheme.get("business_types", [])]
         if business_type.lower() in btypes:
             score += 25
             reasons.append(f"Business type match ({business_type})")
         elif "manufacturing" in btypes or "service" in btypes:
-            score += 10  # Close enough
+            score += 10  # Partial credit for a closely related business type
 
         # Check 3: Investment range
-        # Investment scheme ke range me aata hai ya nahi
+        # Rewards schemes whose investment range includes the user's amount
         inv_range = scheme.get("investment_range", {})
         if inv_range and investment > 0:
             min_inv = inv_range.get("min", 0)
@@ -70,16 +69,16 @@ def find_schemes(investment: float = 0, category: str = "general",
                 score += 5
                 reasons.append(f"Investment thoda kam hai (min: Rs {min_inv:,.0f})")
         elif not inv_range:
-            # Agar investment range define nahi hai toh maan lo eligible hai
+            # Grant small credit when the scheme defines no investment range
             score += 10
 
-        # Check 4: Age check
+        # Check 4: Age eligibility
         min_age = scheme.get("age_min", 18)
         if age >= min_age:
             score += 10
             reasons.append(f"Age qualify karti hai ({age} >= {min_age})")
 
-        # Agar score 30 se zyada hai toh eligible hai
+        # Only schemes above the minimum score threshold are eligible
         if score >= 30:
             eligible.append({
                 "scheme": scheme,
@@ -87,15 +86,15 @@ def find_schemes(investment: float = 0, category: str = "general",
                 "reasons": reasons
             })
 
-    # Score ke hisaab se sort karo - best scheme pehle
+    # Sort by score in descending order so the best match comes first
     eligible.sort(key=lambda x: x["score"], reverse=True)
 
-    # Top 5 schemes return karo
+    # Return only the top five matches
     return eligible[:5]
 
 
 def get_scheme_by_id(scheme_id: int) -> dict:
-    """Ek specific scheme ka full detail return karo"""
+    """Return the full details of a specific scheme by its id."""
     for scheme in ALL_SCHEMES:
         if scheme["id"] == scheme_id:
             return scheme
@@ -103,7 +102,7 @@ def get_scheme_by_id(scheme_id: int) -> dict:
 
 
 def get_all_schemes_summary() -> list:
-    """Saare schemes ka short summary return karo"""
+    """Return a short summary of all available schemes."""
     summary = []
     for scheme in ALL_SCHEMES:
         summary.append({
@@ -119,8 +118,8 @@ def get_all_schemes_summary() -> list:
 
 def format_schemes_for_ai(schemes: list) -> str:
     """
-    Schemes ka formatted string banao jo AI ko context me de sako.
-    AI ko ye data dega ki kaunsi scheme best hai user ke liye.
+    Builds a formatted string describing the matched schemes, ready to be
+    injected into the AI prompt as grounding context.
     """
     if not schemes:
         return "Koi eligible scheme nahi mili user ki profile ke liye."

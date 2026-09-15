@@ -1,42 +1,82 @@
 // MSME Sahayak - Frontend JavaScript
-// Ye file chat functionality handle karti hai
-// Messages bhejti hai API ko aur jawab dikhati hai
-
-// DOM elements - ye sab HTML se hain
+// Handles all chat interactions: sends messages to the API,
+// renders replies and manages the plan for the server.
+// DOM elements - references to the HTML controls
 const messagesDiv = document.getElementById('messages');
 const userInput = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
+const apiKeyInput = document.getElementById('apiKeyInput');
+const keyStatus = document.getElementById('keyStatus');
 
-// Chat history - purane messages yaad rakhne ke liye
-// Isse AI ko context milta hai
+// Chat history - keeps prior messages so the AI has context
 let chatHistory = [];
 
 // ==========================================
-// Message send karo
+// BYOK user-provided Groq API key
+// ==========================================
+
+// Load a previously saved key from localStorage when the page loads
+(function loadSavedKey() {
+    const saved = localStorage.getItem('msme_api_key') || '';
+    if (apiKeyInput && saved) {
+        apiKeyInput.value = saved;
+        setKeyStatus('Key saved (unused)');
+    }
+})();
+
+function getApiKey() {
+    // Use the key from the input field, falling back to localStorage
+    if (apiKeyInput && apiKeyInput.value.trim()) return apiKeyInput.value.trim();
+    return localStorage.getItem('msme_api_key') || null;
+}
+
+function saveApiKey() {
+    const key = apiKeyInput ? apiKeyInput.value.trim() : '';
+    if (!key) {
+        localStorage.removeItem('msme_api_key');
+        setKeyStatus('Key removed');
+        return;
+    }
+    if (!/^gsk_/.test(key)) {
+        setKeyStatus('Invalid key - gsk_ se shuru hona chahiye', true);
+        return;
+    }
+    localStorage.setItem('msme_api_key', key);
+    setKeyStatus('Key saved');
+}
+
+function setKeyStatus(text, isError) {
+    if (!keyStatus) return;
+    keyStatus.textContent = text;
+    keyStatus.style.color = isError ? '#f87171' : '#4ade80';
+}
+
+// ==========================================
+// Send a message
 // ==========================================
 
 async function sendMessage() {
-    // Input se message lo
+    // Read the message from the input
     const message = userInput.value.trim();
 
-    // Agar message empty hai toh kuch mat karo
+    // Do nothing if the message is empty
     if (!message) return;
 
-    // User ka message chat me dikhao
+    // Show the user's message in the chat
     addMessage(message, 'user');
 
-    // Input box khali karo
+    // Clear the input field
     userInput.value = '';
     userInput.style.height = 'auto';
 
-    // Send button disable karo (duplicate send rokne ke liye)
+    // Disable the send button to prevent duplicate submissions
     sendBtn.disabled = true;
 
-    // Loading dikhao
+    // Show the loading indicator
     const loadingMsg = addLoading();
 
     try {
-        // API ko message bhejo
+        // Send the message to the API
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
@@ -44,61 +84,62 @@ async function sendMessage() {
             },
             body: JSON.stringify({
                 message: message,
-                context: ''  // Future me context add kar sakte hain
+                context: '',  // Reserved for future context injection
+                api_key: getApiKey()  // BYOK - the user's own key
             })
         });
 
-        // Response parse karo
+        // Parse the JSON response
         const data = await response.json();
 
-        // Loading hatao
+        // Remove the loading indicator
         loadingMsg.remove();
 
-        // AI ka jawab chat me dikhao
+        // Show the AI's reply in the chat
         addMessage(data.reply, 'bot');
 
-        // Chat history me save karo
+        // Save this exchange to the chat history
         chatHistory.push({ role: 'user', content: message });
         chatHistory.push({ role: 'assistant', content: data.reply });
 
     } catch (error) {
-        // Agar API call fail ho jaye
+        // Handle a failed API call
         loadingMsg.remove();
         addMessage('Sorry, kuch gadbad ho gayi. Please try again.', 'bot');
         console.error('Chat error:', error);
     }
 
-    // Send button wapas enable karo
+    // Re-enable the send button
     sendBtn.disabled = false;
     userInput.focus();
 }
 
 // ==========================================
-// Feature buttons se message bhejo
+// Send a message from a feature button
 // ==========================================
 
 function sendFeature(message) {
-    // Feature button pe click ho toh automatically message bhej do
+    // Fill the input and trigger a send when a feature button is clicked
     userInput.value = message;
     sendMessage();
 }
 
 // ==========================================
-// Message chat area me add karo
+// Add a message to the chat area
 // ==========================================
 
 function addMessage(content, type) {
-    // Naya message div banao
+    // Create a new message element
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${type}-message`;
 
-    // Content me formatting karo (basic markdown support)
+    // Apply basic markdown-style formatting to the content
     let formattedContent = content
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // **bold**
         .replace(/\*(.*?)\*/g, '<em>$1</em>')              // *italic*
         .replace(/\n/g, '<br>');                             // newline
 
-    // Agar bot hai toh "MSME Sahayak:" prefix lagao
+    // Prefix bot messages with the assistant name
     const prefix = type === 'bot' ? '<strong>MSME Sahayak:</strong> ' : '';
 
     messageDiv.innerHTML = `
@@ -107,15 +148,15 @@ function addMessage(content, type) {
         </div>
     `;
 
-    // Chat area me add karo
+    // Append the message to the chat area
     messagesDiv.appendChild(messageDiv);
 
-    // Neeche scroll karo (naye message pe)
+    // Scroll to the bottom so the newest message is visible
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
 // ==========================================
-// Loading indicator dikhao
+// Show the loading indicator
 // ==========================================
 
 function addLoading() {
@@ -128,11 +169,11 @@ function addLoading() {
 }
 
 // ==========================================
-// Enter key se message bhejo
+// Send a message with the Enter key
 // ==========================================
 
 function handleKeyDown(event) {
-    // Enter press kiya aur Shift nahi dabaaya toh message bhejo
+    // Enter pressed without Shift sends the message
     if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
         sendMessage();
@@ -140,14 +181,14 @@ function handleKeyDown(event) {
 }
 
 // ==========================================
-// Textarea auto-resize karo
+// Auto-resize the textarea
 // ==========================================
 
 userInput.addEventListener('input', function() {
-    // Text badhe toh box bhi badhe
+    // Grow the box as the text grows
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 120) + 'px';
 });
 
-// Page load pe input focus karo
+// Focus the input on page load
 userInput.focus();
