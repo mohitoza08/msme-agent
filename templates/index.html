@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MSME Sahayak</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=3">
     <!-- Google Fonts - clean professional look -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Markdown rendering + sanitization (local - no CDN dependency) -->
+    <script src="/static/marked.min.js"></script>
+    <script src="/static/purify.min.js"></script>
 </head>
 <body>
     <div class="app">
@@ -58,7 +61,8 @@
             <div class="messages" id="messages">
                 <div class="message bot-message">
                     <div class="message-content">
-                        <strong>MSME Sahayak:</strong> Namaste! Main hoon MSME Sahayak - aapka AI assistant for MSME businesses.<br><br>
+                        <span class="bot-prefix">MSME Sahayak</span>
+                        Namaste! Main hoon MSME Sahayak - aapka AI assistant for MSME businesses.<br><br>
                         Aap mujhse ye puchh sakte ho:<br>
                         - GST calculation aur rates<br>
                         - GST filing dates aur penalties<br>
@@ -85,6 +89,24 @@
         </main>
     </div>
 
-    <script src="/static/script.js"></script>
+    <!-- Language Selection Modal -->
+    <div class="lang-modal" id="langModal">
+        <div class="lang-modal-card">
+            <h2>Apni language chuno</h2>
+            <p class="lang-modal-sub">Choose your language / Kis language me baat karni hai?</p>
+            <div class="lang-modal-options">
+                <button type="button" class="lang-option" id="optHinglish" onclick="chooseLanguage('hinglish')">
+                    <span class="lang-option-name">Hinglish</span>
+                    <span class="lang-option-desc">Hindi + English mix</span>
+                </button>
+                <button type="button" class="lang-option" id="optEnglish" onclick="chooseLanguage('english')">
+                    <span class="lang-option-name">English</span>
+                    <span class="lang-option-desc">Pure English</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js?v=4"></script>
 </body>
 </html>

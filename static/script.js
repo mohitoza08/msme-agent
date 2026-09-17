@@ -11,6 +11,34 @@ const keyStatus = document.getElementById('keyStatus');
 // Chat history - keeps prior messages so the AI has context
 let chatHistory = [];
 
+// Selected response language - affects the AI's replies
+let appLanguage = 'hinglish';  // 'hinglish' or 'english'
+
+// ==========================================
+// Language selection (modal + storage)
+// ==========================================
+
+function setLanguage(lang) {
+    appLanguage = (lang === 'english') ? 'english' : 'hinglish';
+    localStorage.setItem('msme_language', appLanguage);
+}
+
+function chooseLanguage(lang) {
+    setLanguage(lang);
+    const modal = document.getElementById('langModal');
+    if (modal) modal.classList.remove('active');
+}
+
+// Load the saved language (if any) but always show the chooser popup
+(function initLanguage() {
+    const savedLang = localStorage.getItem('msme_language');
+    if (savedLang === 'english' || savedLang === 'hinglish') {
+        appLanguage = savedLang;
+    }
+    const modal = document.getElementById('langModal');
+    if (modal) modal.classList.add('active');
+})();
+
 // ==========================================
 // BYOK user-provided Groq API key
 // ==========================================
@@ -85,6 +113,7 @@ async function sendMessage() {
             body: JSON.stringify({
                 message: message,
                 context: '',  // Reserved for future context injection
+                language: appLanguage,  // Response language: Hinglish or English
                 api_key: getApiKey()  // BYOK - the user's own key
             })
         });
@@ -133,18 +162,19 @@ function addMessage(content, type) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${type}-message`;
 
-    // Apply basic markdown-style formatting to the content
-    let formattedContent = content
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // **bold**
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')              // *italic*
-        .replace(/\n/g, '<br>');                             // newline
+    // Render Markdown to HTML with marked.js, then sanitize with DOMPurify
+    let rendered = content;
+    if (typeof marked !== 'undefined' && typeof marked.parse === 'function'
+        && typeof DOMPurify !== 'undefined') {
+        rendered = DOMPurify.sanitize(marked.parse(content));
+    }
 
     // Prefix bot messages with the assistant name
-    const prefix = type === 'bot' ? '<strong>MSME Sahayak:</strong> ' : '';
+    const prefix = type === 'bot' ? '<span class="bot-prefix">MSME Sahayak</span>' : '';
 
     messageDiv.innerHTML = `
         <div class="message-content">
-            ${prefix}${formattedContent}
+            ${prefix}${rendered}
         </div>
     `;
 

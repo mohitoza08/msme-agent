@@ -36,6 +36,7 @@ class ChatRequest(BaseModel):
     """Request model for the chat endpoint."""
     message: str  # User message
     context: Optional[str] = ""  # Optional pre-supplied context
+    language: str = "hinglish"  # Response language: "hinglish" or "english"
     api_key: Optional[str] = None  # Bring Your Own Key: user-provided Groq key
 
 class GSTCalcRequest(BaseModel):
@@ -86,7 +87,7 @@ async def chat(request: ChatRequest):
         context += f"\n\nAvailable MSME Schemes: {schemes}"
 
     # Generate the reply, using the user's own key when provided (BYOK)
-    reply = get_ai_response(request.message, context, api_key=request.api_key)
+    reply = get_ai_response(request.message, context, api_key=request.api_key, language=request.language)
 
     return {"reply": reply}
 
